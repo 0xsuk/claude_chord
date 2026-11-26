@@ -1,0 +1,317 @@
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --claude: #0038ff;
+  --midi: #ff3d00;
+  --line: #000000;
+  --font: "IBM Plex Sans JP", sans-serif;
+  --mono: "IBM Plex Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font: inherit;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1.5px solid var(--fg);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+button:hover { background: var(--fg); color: var(--bg); }
+button.on { background: var(--fg); color: var(--bg); }
+kbd { font-family: var(--mono); font-size: 12px; margin-left: 6px; }
+
+.mono { font-family: var(--mono); }
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 24px;
+  border-bottom: 1.5px solid var(--line);
+}
+.brand { font-family: var(--mono); font-weight: 600; font-size: 15px; }
+.status { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.status .bad { color: var(--midi); font-weight: 700; }
+.toggle { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.toggle input { accent-color: var(--fg); }
+#audio-btn.need { background: var(--claude); border-color: var(--claude); color: var(--bg); font-weight: 700; }
+
+.panes {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.pane {
+  padding: 24px;
+  min-width: 0;
+}
+.pane + .pane { border-left: 1.5px solid var(--line); }
+
+.pane-h {
+  margin: 0 0 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.swatch { width: 12px; height: 12px; display: inline-block; }
+.swatch-claude { background: var(--claude); }
+.swatch-midi { background: var(--midi); }
+
+.empty { font-size: 15px; }
+
+.chord-title {
+  font-size: clamp(56px, 8vw, 112px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  word-break: break-all;
+}
+
+/* 構成音: 枠なしで小さく横に並べる */
+.tones {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 15px;
+}
+.tones li { display: inline-flex; align-items: baseline; gap: 6px; }
+.tones .n { font-weight: 700; }
+.tones .s { font-size: 13px; }
+.tones .d { font-family: var(--mono); font-size: 12px; }
+
+/* 進行: コードを四角で並べ、横幅は拍数に比例。今のコードを青で塗る */
+.prog {
+  --beat-px: 56px;
+  position: relative;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  /* 左端の線。四角の枠は box-shadow で内側に描くので幅に影響せず、境目が拍のグリッドにぴったり乗る */
+  border-left: 1.5px solid var(--fg);
+}
+.prog li {
+  position: relative;
+  flex: none;
+  height: 104px;
+  margin: 0;
+  z-index: 1;
+  background: var(--bg);
+  box-shadow: inset -1.5px 0 0 var(--fg), inset 0 1.5px 0 var(--fg), inset 0 -1.5px 0 var(--fg);
+  padding: 8px 12px 18px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+.prog li:hover:not(.now) { background: var(--fg); color: var(--bg); }
+.prog li.now { background: var(--claude); color: var(--bg); }
+.prog .cn {
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.prog .cn.vert {
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.prog .len {
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+/* 下に1拍ごとの目盛り */
+.prog li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background-image: repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px var(--beat-px));
+  pointer-events: none;
+}
+/* 右端のつまみ */
+.prog .grip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.prog .grip::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  width: 3px;
+  height: 28px;
+  margin-top: -14px;
+  background: currentColor;
+}
+.prog li.narrow { padding: 6px 6px 12px 2px; }
+.prog li.narrow .len { display: none; }
+.prog li.narrow .grip { width: 6px; }
+.prog li.narrow .grip::before { right: 1px; width: 2px; height: 20px; margin-top: -10px; }
+.prog li.dragging { outline: 3px solid var(--claude); outline-offset: -3px; }
+/* ドラッグ中だけ、進行全体に拍のグリッドを重ねる（細線 = 1/4拍、太線 = 1拍） */
+.prog.resizing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* 四角の後ろ。線が見えるのは四角のない右側の空きだけ */
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to right, var(--fg) 0 2px, transparent 2px var(--beat-px)),
+    repeating-linear-gradient(to right, var(--claude) 0 1px, transparent 1px calc(var(--beat-px) / 4));
+}
+.prog.resizing li { cursor: ew-resize; }
+/* 四角の中は下端の目盛りだけ細かくする（文字に線をかぶせない） */
+.prog.resizing li::after {
+  height: 14px;
+  background-image:
+    repeating-linear-gradient(to right, currentColor 0 2px, transparent 2px var(--beat-px)),
+    repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px calc(var(--beat-px) / 4));
+  background-size: 100% 100%, 100% 50%;
+  background-position: 0 0, 0 100%;
+  background-repeat: no-repeat;
+}
+@media (max-width: 800px) {
+  .prog { --beat-px: 36px; }
+  .prog li { height: 88px; }
+}
+
+.prog-ctl {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+#prog-toggle { min-width: 104px; font-weight: 700; }
+.bpm { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.bpm input { width: 200px; accent-color: var(--fg); }
+.bpm .mono { font-size: 15px; min-width: 3ch; }
+.prog-info { font-size: 13px; }
+
+.voiced { font-size: 14px; margin-bottom: 8px; }
+.voiced .k { font-weight: 700; margin-right: 8px; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.warnings { margin: 8px 0 16px; padding-left: 18px; font-size: 13px; }
+
+.cands { list-style: none; margin: 0 0 20px; padding: 0; }
+.cands li { margin-bottom: 10px; }
+.cands .row { display: flex; align-items: baseline; gap: 12px; }
+.cands .name { font-weight: 700; line-height: 1.05; }
+.cands .pct { font-family: var(--mono); font-size: 13px; }
+.cands .barline { height: 4px; background: var(--midi); margin-top: 4px; }
+.cands li:first-child .name { font-size: clamp(48px, 6.5vw, 96px); letter-spacing: -0.02em; }
+.cands li:first-child .barline { height: 8px; }
+
+.pedal {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid var(--fg);
+  padding: 2px 8px;
+}
+
+/* 鍵盤 */
+.kb-wrap {
+  border-top: 1.5px solid var(--line);
+  padding: 16px 24px 24px;
+}
+.keyboard {
+  position: relative;
+  height: clamp(120px, 18vw, 200px);
+  user-select: none;
+  touch-action: none;
+}
+.key {
+  position: absolute;
+  top: 0;
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  font-family: var(--mono);
+  overflow: hidden;
+  cursor: pointer;
+}
+.key.white { height: 100%; background: var(--bg); z-index: 1; }
+.key.black { height: 62%; background: var(--fg); z-index: 2; }
+.key.c-label::after {
+  content: attr(data-c);
+  white-space: pre;
+  text-align: center;
+  line-height: 1.2;
+  position: absolute;
+  bottom: 3px;
+  font-family: var(--font);
+  font-size: 9px;
+  color: var(--fg);
+}
+.key.is-c::after { font-weight: 700; }
+.key.claude { background: var(--claude); }
+.key.midi { background: var(--midi); }
+.key.claude.midi { background: linear-gradient(to bottom, var(--claude) 0 50%, var(--midi) 50% 100%); }
+.key.claude::after, .key.midi::after { color: var(--bg); }
+.key .lbl {
+  color: var(--bg);
+  font-size: 10px;
+  line-height: 1.15;
+  text-align: center;
+  padding-bottom: 28px;
+  pointer-events: none;
+  font-weight: 600;
+}
+.key.black .lbl { padding-bottom: 4px; font-size: 8px; letter-spacing: -0.04em; }
+
+@media (max-width: 800px) {
+  .panes { grid-template-columns: 1fr; }
+  .pane + .pane { border-left: 0; border-top: 1.5px solid var(--line); }
+  .bar, .pane, .kb-wrap { padding-left: 16px; padding-right: 16px; }
+  .key .lbl { display: none; }
+  .key.c-label:not(.is-c)::after { display: none; }
+  .key.is-c::after { content: "ド"; font-size: 8px; }
+}

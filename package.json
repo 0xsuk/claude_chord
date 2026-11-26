@@ -1,0 +1,22 @@
+{
+  "name": "claude-chord",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/web/main.ts --bundle --format=esm --target=es2022 --outfile=public/app.js --sourcemap",
+    "start": "npm run build && tsx src/server/server.ts",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "samples": "bash scripts/fetch-samples.sh"
+  },
+  "dependencies": {
+    "tone": "15.1.22"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Claude 用のエントリポイント。詳しくは ./chord --help
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$DIR/node_modules/.bin/tsx" "$DIR/src/cli/chord.ts" "$@"
